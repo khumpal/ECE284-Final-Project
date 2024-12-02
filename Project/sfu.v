@@ -8,25 +8,21 @@ input reset;
 input acc;
 input relu;
 input signed [psum_bw-1:0] in;
-output signed [psum_bw-1:0] out;
+output reg signed [psum_bw-1:0] out;
 
 reg signed [psum_bw-1:0] psum_q;
 reg [3:0] counter;
 
 always @(posedge clk) begin
-    if (reset) begin
+    if (reset) 
         psum_q <= 0;
-    end
     else begin
-        if (acc == 1) begin
+        if (acc == 1)
             psum_q <= psum_q + in;
-        end
-        else if (relu == 1) begin
+        else if (relu == 1) 
             psum_q <= (psum_q > 0)? psum_q : 0;
-        end
-        else begin
+        else 
             psum_q <= psum_q;
-        end
     end
         
 end
@@ -43,5 +39,6 @@ always @(posedge clk) begin
         counter <= counter + 1;
     end
 end
+
 
 endmodule

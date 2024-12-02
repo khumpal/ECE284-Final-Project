@@ -9,7 +9,7 @@ parameter psum_bw = 16;
 reg load_ready_q;
 reg [3:0] a_q;
 reg [3:0] b_q;
-reg [3:0] c_q;
+reg [15:0] c_q;
 reg [1:0] inst_q;
 output [psum_bw-1:0] out_s;
 input  [bw-1:0] in_w; // inst[1]:execute, inst[0]: kernel loading
@@ -106,7 +106,6 @@ always @ (posedge clk) begin
 		end
 	end
 end
-...
-...
+
 
 endmodule

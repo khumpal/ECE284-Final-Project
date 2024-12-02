@@ -31,7 +31,7 @@ wire [31:0] xmem_out;
 
 
 sram_x #(
-    .num(2048),
+    .num(2048)
 ) x_w_mem_instance (
     .CLK(clk),
     .D(D_xmem),
@@ -63,7 +63,7 @@ corelet #(
     .clk(clk),
     .reset(reset),
     .inst(inst[34:0]),
-    .mode(1),
+    .mode(1'b0),
     .in_corelet_west(xmem_out),
     .in_corelet_north(in_corelet_north),
     .o_fifo_out(o_fifo_out),
@@ -78,7 +78,7 @@ assign sfp_out = final_out;
 wire [127:0] psum_mem_out;
 
 sram_psum #(
-    .num(2048),
+    .num(2048)
 ) psum_mem_instance (
     .CLK(clk),
     .D(o_fifo_out),

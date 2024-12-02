@@ -16,8 +16,8 @@ module corelet (clk, reset, inst, mode,in_corelet_west, in_corelet_north,o_fifo_
 
 
 
-  output [(psum_bw*bw)-1:0] o_fifo_out;
-  output [(psum_bw*bw)-1:0] final_out;
+  output [(psum_bw*col)-1:0] o_fifo_out;
+  output [(psum_bw*col)-1:0] final_out;
 
 
 

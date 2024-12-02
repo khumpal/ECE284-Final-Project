@@ -3,7 +3,7 @@
 module ofifo (clk, in, out, rd, wr, o_full, reset, o_ready, o_valid);
 
   parameter col  = 8;
-  parameter bw = 4;
+  parameter psum_bw = 16;
 
   input  clk;
   input  [col-1:0] wr;
@@ -21,12 +21,12 @@ module ofifo (clk, in, out, rd, wr, o_full, reset, o_ready, o_valid);
   
   genvar i;
 
-  assign o_valid =  ~|empty
-  assign o_ready = ~(|full);  //bitwise or, assign for all bits in full being 0
+  assign o_valid =  ~&(~empty);
+  assign o_ready = ~(empty[col-1]);  //bitwise or, assign for all bits in full being 0
   assign o_full  = |full;  // assign for when at least one of the fifos are full
 
   for (i=0; i<col ; i=i+1) begin : col_num
-      fifo_depth64 #(.bw(bw)) fifo_instance (
+      fifo_depth64 #(.bw(psum_bw)) fifo_instance (
 	        .rd_clk(clk),
 	        .wr_clk(clk),
           .rd(rd_en),
