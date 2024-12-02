@@ -11,6 +11,7 @@ input signed [psum_bw-1:0] in;
 output signed [psum_bw-1:0] out;
 
 reg signed [psum_bw-1:0] psum_q;
+reg [3:0] counter;
 
 always @(posedge clk) begin
     if (reset) begin
@@ -30,6 +31,17 @@ always @(posedge clk) begin
         
 end
 
-assign out = psum_q;
+always @(posedge clk) begin
+    if (reset) begin
+        counter <= 0;
+    end
+    else if (counter == 4'b1000) begin
+        out <= psum_q;
+        counter <= 0;
+    end
+    else begin
+        counter <= counter + 1;
+    end
+end
 
 endmodule
