@@ -41,7 +41,7 @@ always @(posedge clk) begin
     end
     else begin
         counter <= counter + 1;
-    end
+    end 
 end
 
 endmodule
