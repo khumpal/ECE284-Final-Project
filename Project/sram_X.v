@@ -1,12 +1,12 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module sram_32b_w2048 (CLK, D, Q, CEN, WEN, A);
+module sram_x (CLK, D, Q, CEN, WEN, A);
 
   input  CLK;
   input  WEN;
   input  CEN;
-  input  [31:0] D;
-  input  [10:0] A;
+  input  [31:0] D; 
+  input  [10:0] A; //adress
   output [31:0] Q;
   parameter num = 2048;
 
