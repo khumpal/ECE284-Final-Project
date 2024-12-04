@@ -5,7 +5,7 @@
 Features:
 - The hardware gates conserve power by maintaining the current state when the input is zero.
 - We eliminate redundant weights, allowing the hardware to bypass computations associated with these pruned elements.
-- `in_w_zero` and `in_n_zero` signals are from `corelet.v` hardware that determines if the input is zero, there will be a signal sent to mux gate to keep the current status. So no change in signal going to the multiplication gate.
+- `in_w_zero` and `in_n_zero` signals are from `mac_array.v` temp zeros as a 0 signal. there will be a signal sent to mux gate to keep the current status. So no change in signal going to the multiplication gate.
 
 
 ## Alpha2: Timeskip structured pruning + QAT (weight stationary and output stationary) - Software
