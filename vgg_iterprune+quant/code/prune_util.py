@@ -1,6 +1,9 @@
 import torch
 from torch import nn
 from torch.nn.utils import prune
+
+###  One of these should work  ###
+#from models.quant_layer import QuantConv2d
 from models import QuantConv2d
 
 def ws_prune_vgg16(model, prune_percentage:float): 
@@ -44,18 +47,16 @@ def ws_conv_prune(conv_layer:nn.Conv2d, num_prune_sticks:int, ln:int=1):
 
 def os_conv_prune(conv_layer:nn.Conv2d, num_prune_slices:int, ln:int=1): 
     num_slices = conv_layer.weight.size(1)
-    print(f'Pruning {num_prune_slices} ic-slices out of {num_slices} ic-slices per output channel ({num_prune_slices/num_slices:.1%} pruned)')
+    print(f'Pruning {num_prune_slices} ic-slices out of {num_slices} ic-slices ({num_prune_slices/num_slices:.1%} pruned)')
     
     num_oc, num_ic, k1, k2 = conv_layer.weight.shape
-
     mask = torch.empty(conv_layer.weight.shape, dtype=torch.bool, device=conv_layer.weight.device)
     with torch.no_grad(): 
-        for oc in range(num_oc): 
-            num_already_pruned = (conv_layer.weight_mask[oc,:,0,0]==0).sum().item() if hasattr(conv_layer, 'weight_mask') else 0
-            weight_block = conv_layer.weight[oc,:,:,:] # (ic, k, k)
-            norms = torch.norm(weight_block, p=ln, dim=(1,2), keepdim=True)
-            threshold = norms.view((-1)).topk(k=num_prune_slices+num_already_pruned, largest=False).values[-1]
-            mask[oc,:,:,:] = (norms > threshold).expand(num_ic, k1, k2)
+        num_already_pruned = (conv_layer.weight_mask[0,:,0,0]==0).sum().item() if hasattr(conv_layer, 'weight_mask') else 0
+        weight_block = conv_layer.weight[:,:,:,:] # (oc, ic, k, k)
+        norms = torch.norm(weight_block, p=ln, dim=(0, 2, 3), keepdim=True)
+        threshold = norms.view((-1)).topk(k=num_prune_slices+num_already_pruned, largest=False).values[-1]
+        mask[:,:,:,:] = (norms > threshold).expand(num_oc, num_ic, k1, k2)
         prune.custom_from_mask(conv_layer, 'weight', mask)
 
 def quantize_pruned(model): 
@@ -68,7 +69,13 @@ def quantize_pruned(model):
             model.features[i] = ql # replace layer
 
 if __name__=='__main__': 
+    from quant_layer import QuantConv2d
+
     dd = nn.Conv2d(4,2,3)
+    print(dd.weight)
+    os_conv_prune(dd,1,1)
+    print(dd.weight)
+    os_conv_prune(dd,1,1)
     print(dd.weight)
     os_conv_prune(dd,1,1)
     print(dd.weight)
