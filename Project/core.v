@@ -16,7 +16,7 @@ module core #(
 
     
     input clk,
-    input [34:0] inst,
+    input [33:0] inst,
     input reset,
     output ofifo_valid,
     input [bw*row-1:0] D_xmem, //for WS will load weights and activations to Xmem
@@ -51,6 +51,7 @@ wire [psum_bw*col-1:0]in_corelet_north;
 assign in_corelet_north = 0;
 wire [psum_bw*col-1:0] o_fifo_out;
 wire[psum_bw*col-1:0] final_out;
+wire [psum_bw*col-1:0] in_sfu_from_sram;
 
 
 
@@ -62,15 +63,18 @@ corelet #(
 ) corelet_instance (
     .clk(clk),
     .reset(reset),
-    .inst(inst[34:0]),
+    .inst(inst[33:0]),
     .mode(1'b0),
     .in_corelet_west(xmem_out),
     .in_corelet_north(in_corelet_north),
+    .in_sfu_from_sram(in_sfu_from_sram),
     .o_fifo_out(o_fifo_out),
     .final_out(final_out)
 
 );
+
 assign sfp_out = final_out;
+assign in_sfu_from_sram = psum_mem_out;
 
 //Psum Memory inst
 //(CLK, D, Q, CEN, WEN, A);

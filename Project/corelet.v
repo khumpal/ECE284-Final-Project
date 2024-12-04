@@ -1,4 +1,4 @@
-module corelet (clk, reset, inst, mode,in_corelet_west, in_corelet_north,o_fifo_out,final_out);
+module corelet (clk, reset, inst, mode, in_corelet_west, in_corelet_north, in_sfu_from_sram, o_fifo_out, final_out);
 
   parameter bw = 4;
   parameter psum_bw = 16;
@@ -6,7 +6,7 @@ module corelet (clk, reset, inst, mode,in_corelet_west, in_corelet_north,o_fifo_
   parameter row = 8;
 
 
-  input [34:0] inst;
+  input [33:0] inst;
   input clk;
   input reset;
   input mode;
@@ -107,7 +107,7 @@ for (i=1; i<col+1; i=i+1) begin : sfu_instances
         .out(sfu_out[(psum_bw*i)-1:psum_bw*(i-1)]),
         .in(in_sfu_from_sram[(psum_bw*i-1):psum_bw*(i-1)]),
         .acc(inst[33]),
-        .relu(inst[34]),
+        .relu(!inst[33]),
         .clk(clk),
         .reset(reset)
     );
