@@ -8,12 +8,12 @@ Features:
 - `in_w_zero` and `in_n_zero` signals are from `corelet.v` hardware that determines if the input is zero, there will be a signal sent to mux gate to keep the current status. So no change in signal going to the multiplication gate.
 
 
-## Alpha2 Timeskip: Timeskip structured pruning + QAT (weight stationary and output stationary). 
+## Alpha2: Timeskip structured pruning + QAT (weight stationary and output stationary) - Software
 - prune_util.py in the "code" folder can be placed in the "models" folder in the original ece284fa24 github. 
 - float_os_prune means floating point model, output stationary, pruned. 
 - The overall process for each WS and OS version is, get full precision model trained, iteratively prune it (prune -> train -> prune -> train ...), and then do QAT on the pruned model. 
 
-## Alpha3 Huffman: (description)
+## Alpha3: Huffman - Software,Hardware
 
 ### HUffman decoding has three hardware blocks
 
