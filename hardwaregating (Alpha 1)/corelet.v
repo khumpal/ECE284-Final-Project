@@ -29,6 +29,7 @@ module corelet (clk, reset, inst, mode, in_corelet_west, in_corelet_north, in_sf
 
   wire L0_o_full;
   wire L0_o_ready;
+  wire [row-1:0] out_zero;
 
   l0 #(
     .row(row),
@@ -37,6 +38,7 @@ module corelet (clk, reset, inst, mode, in_corelet_west, in_corelet_north, in_sf
     .clk(clk),
     .in(L0_in),
     .out(L0_out),
+    .out_zero(out_zero),
     .rd(inst[3]),
     .wr(inst[2]),
     .o_full(L0_o_full),
@@ -50,7 +52,10 @@ module corelet (clk, reset, inst, mode, in_corelet_west, in_corelet_north, in_sf
 wire [(psum_bw*col)-1:0] array_out_s;
 
 wire [(psum_bw*col)-1:0] array_in_n;
+wire [col-1:0] array_in_n_zero;
+
 assign array_in_n = 128'b0;
+assign array_in_n_zero = 8'b1111_1111;
 
 wire [col-1:0] array_valid;
 
@@ -64,8 +69,10 @@ mac_array #(
     .reset(reset),
     .out_s(array_out_s),
     .in_w(L0_out), //ouput from L0
+    .in_w_zero(out_zero),
     .inst_w(inst[1:0]),
     .in_n(array_in_n), //tied to 0 in WS
+    .in_n_zero(array_in_n_zero),
     .valid(array_valid)
 );
 
@@ -74,7 +81,7 @@ mac_array #(
 //OFIFO Inst 
 //(clk, in, out, rd, wr, o_full, reset, o_ready, o_valid);
 
-wire [psum_bw*col-1:0] ofifo_out;
+wire [psum_bw*col-1:0] ofifo_out_corelet;
 wire ofifo_full;
 wire ofifo_ready;
 wire ofifo_valid;
@@ -85,7 +92,7 @@ ofifo #(
 ) ofifo_instance (
     .clk(clk),
     .in(array_out_s),
-    .out(ofifo_out),
+    .out(ofifo_out_corelet),
     .rd(inst[6]),
     .wr(array_valid),
     .o_full(ofifo_full),
@@ -93,6 +100,8 @@ ofifo #(
     .o_ready(ofifo_ready),
     .o_valid(ofifo_valid)
 );
+
+assign o_fifo_out = ofifo_out_corelet;
 
 wire acc, relu;
 wire[psum_bw*col-1:0] sfu_out;
@@ -112,5 +121,7 @@ for (i=1; i<col+1; i=i+1) begin : sfu_instances
         .reset(reset)
     );
 end
+
+assign final_out = sfu_out;
 
   endmodule

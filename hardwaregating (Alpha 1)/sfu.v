@@ -14,34 +14,32 @@ reg signed [psum_bw-1:0] psum_q;
 reg [3:0] counter;
 
 always @(posedge clk) begin
-    if (reset) begin
+    if (reset) 
         psum_q <= 0;
-    end
     else begin
-        if (acc == 1) begin
+        if (acc == 1)
             psum_q <= psum_q + in;
-        end
-        else if (relu == 1) begin
+        else if (relu == 1) 
             psum_q <= (psum_q > 0)? psum_q : 0;
-        end
-        else begin
+        else 
             psum_q <= psum_q;
-        end
     end
         
 end
 
-always @(posedge clk) begin
-    if (reset) begin
-        counter <= 0;
-    end
-    else if (counter == 4'b1000) begin
-        out <= psum_q;
-        counter <= 0;
-    end
-    else begin
-        counter <= counter + 1;
-    end
-end
+assign out = psum_q;
+//always @(posedge clk) begin
+//    if (reset) begin
+//        counter <= 0;
+//    end
+//    else if (counter == 4'b1000) begin //increment the counter every 9 psums
+//        out <= psum_q;
+//        counter <= 0;
+//    end
+//    else begin
+//        counter <= counter + 1;
+//    end
+//end
+
 
 endmodule

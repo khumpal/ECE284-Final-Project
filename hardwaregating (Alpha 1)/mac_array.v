@@ -1,6 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module mac_array (clk, reset, out_s, in_w, in_w_zero, in_n, in_n_zero, inst_w, valid, mode);
+module mac_array (clk, reset, out_s, in_w, in_w_zero, in_n, in_n_zero, inst_w, valid);
 
   parameter bw = 4;
   parameter psum_bw = 16;
@@ -13,15 +13,13 @@ module mac_array (clk, reset, out_s, in_w, in_w_zero, in_n, in_n_zero, inst_w, v
   input  [1:0] inst_w;
   input  [psum_bw*col-1:0] in_n;
   output [col-1:0] valid;
+  input  [col-1:0] in_n_zero;
+  input  [row-1:0] in_w_zero;
 
-  input [row-1:0] in_w_zero;
-  input [col-1:0] in_n_zero;
-  input mode;
 
   reg    [2*row-1:0] inst_w_temp;
   wire   [psum_bw*col*(row+1)-1:0] temp;
   wire   [row*col-1:0] valid_temp;
-  wire   [(row+1)*col-1:0] temp_zero;
 
 
   genvar i;
@@ -34,16 +32,13 @@ module mac_array (clk, reset, out_s, in_w, in_w_zero, in_n, in_n_zero, inst_w, v
       mac_row #(.bw(bw), .psum_bw(psum_bw)) mac_row_instance (
          .clk(clk),
          .reset(reset),
-	 .in_w(in_w[bw*i-1:bw*(i-1)]),
+    	 .in_w(in_w[bw*i-1:bw*(i-1)]),
 	 .in_w_zero(in_w_zero[i-1]),
-	 .inst_w(inst_w_temp[2*i-1:2*(i-1)]),
-	 .in_n(temp[psum_bw*col*i-1:psum_bw*col*(i-1)]),
-	 .in_n_zero(temp_zero[col*i-1:col*(i-1)]),
+    	 .inst_w(inst_w_temp[2*i-1:2*(i-1)]),
+    	 .in_n(temp[psum_bw*col*i-1:psum_bw*col*(i-1)]),
+	 .in_n_zero(in_n_zero),
          .valid(valid_temp[col*i-1:col*(i-1)]),
-	 .out_s(temp[psum_bw*col*(i+1)-1:psum_bw*col*(i)]),
-	 .out_s_zero(temp_zero[col*(i+1)-1:col*(i)]),
-	 .mode(mode)
- );
+    	 .out_s(temp[psum_bw*col*(i+1)-1:psum_bw*col*(i)]));
   end
 
   always @ (posedge clk) begin

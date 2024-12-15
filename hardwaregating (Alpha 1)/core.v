@@ -53,7 +53,7 @@ wire [psum_bw*col-1:0] o_fifo_out;
 wire[psum_bw*col-1:0] final_out;
 wire [psum_bw*col-1:0] in_sfu_from_sram;
 
-
+wire [127:0] psum_mem_out;
 
 corelet #(
     .row(row),
@@ -67,19 +67,21 @@ corelet #(
     .mode(1'b0),
     .in_corelet_west(xmem_out),
     .in_corelet_north(in_corelet_north),
-    .in_sfu_from_sram(in_sfu_from_sram),
+    .in_sfu_from_sram(psum_mem_out),
     .o_fifo_out(o_fifo_out),
     .final_out(final_out)
 
 );
 
+//wire [127:0] psum_mem_out;
+
 assign sfp_out = final_out;
-assign in_sfu_from_sram = psum_mem_out;
+//assign in_sfu_from_sram = psum_mem_out;
 
 //Psum Memory inst
 //(CLK, D, Q, CEN, WEN, A);
 
-wire [127:0] psum_mem_out;
+//wire [127:0] psum_mem_out;
 
 sram_psum #(
     .num(2048)
@@ -92,5 +94,9 @@ sram_psum #(
     .A(inst[30:20])
 
 );
+
+//always @(posedge clk) begin
+//	D_xmem <= 0;
+//end
 
 endmodule
