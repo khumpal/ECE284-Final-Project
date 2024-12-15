@@ -226,14 +226,14 @@ initial begin
 
 
     /////// Kernel data writing to L0 ///////
-    current_procedure <= "Kernel Data Write to L0";
+    current_procedure <= "Kernel Data Write to Ififo";
 
     A_xmem = 11'b1000_0000_000;
 
     for (u=0; u<col; u=u+1) begin
 	    #0.5 clk = 1'b0;
 	    WEN_xmem = 1; CEN_xmem = 0;
-	    l0_wr <= 1;
+	    ififo_wr <= 1;
 	    $display("Kernel data (to memory): %32b",D_xmem);
 	    if (u>0) begin
 		    //l0_wr_q <= 1;
@@ -242,10 +242,10 @@ initial begin
 	    #0.5 clk = 1'b1;
     end
 
-    #0.5 clk = 1'b0; l0_wr <= 1;
+    #0.5 clk = 1'b0; ififo_wr <= 1;
     #0.5 clk = 1'b1;
 
-    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; l0_wr <= 0;
+    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; ififo_wr <= 0;
     #0.5 clk = 1'b1;
 
     D_xmem <= 0;
@@ -258,7 +258,7 @@ initial begin
 
     for (v=0;v<col;v=v+1) begin
 	    #0.5 clk = 1'b0;
-	    l0_rd <= 1;
+	    ififo_rd <= 1;
 	    //load_q <= 1;
 	    if (v>0) begin
 		    load <= 1;
@@ -268,7 +268,7 @@ initial begin
     
     #0.5 clk = 1'b0;
     load <= 1; //for reading the last weight into the PE
-    l0_rd <= 0; //to stop reading from L0
+    ififo_rd <= 0; //to stop reading from L0
     #0.5 clk = 1'b1;
 
 
@@ -348,26 +348,26 @@ initial begin
     //////// OFIFO READ ////////
     // Ideally, OFIFO should be read while execution, but we have enough ofifo
     // depth so we can fetch out after execution.
-    current_procedure <= "OFIFO Read Psum from PEs";
+    // current_procedure <= "OFIFO Read Psum from PEs";
 
     //A_pmem = 11'b0000_0000_000;
 
-    for (w=0;w<len_nij;w=w+1) begin
-	    #0.5 clk = 1'b0;
-	    ofifo_rd <= 1;
-	    CEN_pmem <= 1'b0;
-	    WEN_pmem <= 1'b0;
-	    if (w>1) begin
-		    A_pmem <= A_pmem + 1;
-	    end
-	    #0.5 clk = 1'b1;
-    end
+    // for (w=0;w<len_nij;w=w+1) begin
+	  //   #0.5 clk = 1'b0;
+	  //   ofifo_rd <= 1;
+	  //   CEN_pmem <= 1'b0;
+	  //   WEN_pmem <= 1'b0;
+	  //   if (w>1) begin
+		//     A_pmem <= A_pmem + 1;
+	  //   end
+	  //   #0.5 clk = 1'b1;
+    // end
 
-    #0.5 clk = 1'b0; A_pmem <= A_pmem + 1;
-    #0.5 clk = 1'b1;
+    // #0.5 clk = 1'b0; A_pmem <= A_pmem + 1;
+    // #0.5 clk = 1'b1;
 
-    #0.5 clk = 1'b0;  WEN_pmem = 1;  CEN_pmem = 1; A_pmem <= A_pmem + 1; ofifo_rd <= 0;
-    #0.5 clk = 1'b1;
+    // #0.5 clk = 1'b0;  WEN_pmem = 1;  CEN_pmem = 1; A_pmem <= A_pmem + 1; ofifo_rd <= 0;
+    // #0.5 clk = 1'b1;
 
     /////////////////////////////////////
 

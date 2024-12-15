@@ -4,19 +4,12 @@ module core #(
     parameter psum_bw = 16,
     parameter bw = 4
 )(
-    // core  #(.bw(bw), .col(col), .row(row)) core_instance (
-    // .clk(clk), 
-    // .inst(inst_q), // should take inst[33]
-    // .ofifo_valid(ofifo_valid),
-    // .D_xmem(D_xmem_q), 
-    // .sfp_out(sfp_out), 
-    // .reset(reset)); 
-
     input clk,
     input [33:0] inst,
     input reset,
+    input [3:0] accum_limit, // Accumulation limit for OS mode
     output ofifo_valid,
-    input [bw*row-1:0] D_xmem, // for WS will load weights and activations to Xmem
+    input [bw*row-1:0] D_xmem, // For WS: Load weights and activations to Xmem
     output [psum_bw*col-1:0] sfp_out // SFU output
 );
 
@@ -42,14 +35,14 @@ sram_x #(
 wire [(psum_bw * col) - 1:0] in_corelet_north;
 wire [(psum_bw * col) - 1:0] o_fifo_out;
 wire [(psum_bw * col) - 1:0] final_out;
-wire [(psum_bw * col) - 1:0] in_sfu_from_sram;
-wire [(psum_bw * col *row) - 1:0] os_output;
-wire [col*row - 1:0] os_ready;
+wire [(psum_bw * col) - 1:0] psum_mem_out;
+wire [(psum_bw * col * row) - 1:0] os_output;
+wire [col * row - 1:0] os_ready;
 
 // Handle `in_corelet_north` for WS and OS modes
 assign in_corelet_north = (inst[33]) ?  // Check mode: 1 = OS, 0 = WS
-    { {psum_bw{1'b0}}, xmem_out } :    // OS mode: Weights from memory (128 bits padded correctly)
-    {psum_bw*col{1'b0}};               // WS mode: Default to 0
+    {{(psum_bw * col - bw * row){1'b0}}, xmem_out} : // OS mode: Pad weights to match width
+    {(psum_bw * col){1'b0}};                        // WS mode: Default to 0
 
 corelet #(
     .row(row),
@@ -67,7 +60,8 @@ corelet #(
     .o_fifo_out(o_fifo_out),          // Output FIFO for WS mode
     .final_out(final_out),            // Final SFU output
     .os_ready(os_ready),              // Ready signal for OS mode
-    .os_output(os_output)             // Output for OS mode
+    .os_output(os_output),            // Output for OS mode
+    .accum_limit(accum_limit)         // Accumulation limit for OS mode
 );
 
 // Assign SFU output to the top-level output
@@ -75,8 +69,6 @@ assign sfp_out = final_out;
 
 // Psum Memory instance
 // (CLK, D, Q, CEN, WEN, A)
-
-wire [(psum_bw * col) - 1:0] psum_mem_out;
 
 sram_psum #(
     .num(2048)

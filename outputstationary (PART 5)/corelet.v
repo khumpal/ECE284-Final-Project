@@ -1,7 +1,7 @@
 module corelet (
 	clk, reset, inst, mode,
 	in_corelet_west, in_corelet_north, in_sfu_from_sram,
-	o_fifo_out, final_out, os_ready, os_output
+	o_fifo_out, final_out, os_ready, os_output, accum_limit
 );
 
   parameter bw = 4;           	// Bit-width for activations and weights
@@ -12,13 +12,14 @@ module corelet (
   input [33:0] inst;          	// Instruction signal
   input clk, reset, mode;     	// Clock, reset, and mode signal (0: WS, 1: OS)
   input [(bw * row) - 1:0] in_corelet_north;  // Input weights/psums from the top (used in OS mode)
-  input [(bw * row) - 1:0] in_corelet_west;    	// Input activations from the left
+  input [(bw * row) - 1:0] in_corelet_west;  // Input activations from the left
   input [(psum_bw * col) - 1:0] in_sfu_from_sram;  // Input psums for the SFU
+  input [3:0] accum_limit;    // Accumulation limit for OS mode
 
-  output [(psum_bw * col) - 1:0] o_fifo_out;   	// Output from OFIFO
-  output [(psum_bw * col) - 1:0] final_out;    	// Output from SFU
-  output [row*col - 1:0] os_ready;                	// OS-ready signal for each column
-  output [(psum_bw * col*row) - 1:0] os_output;   	// OS-mode output from the array
+  output [(psum_bw * col) - 1:0] o_fifo_out;  // Output from OFIFO
+  output [(psum_bw * col) - 1:0] final_out;  // Output from SFU
+  output [row*col - 1:0] os_ready;           // OS-ready signal for each column
+  output [(psum_bw * col * row) - 1:0] os_output; // OS-mode output from the array
 
   // LO buffer for activations
   wire [(bw * row) - 1:0] L0_in;
@@ -59,13 +60,13 @@ module corelet (
 
   // Systolic Array
   wire [(psum_bw * col) - 1:0] array_out_s;
-  wire [(psum_bw * col*row) - 1:0] array_os_output;
+  wire [(psum_bw * col * row) - 1:0] array_os_output;
   wire [(col - 1):0] array_valid;
-  wire [(row*col - 1):0] array_os_ready;
+  wire [(row * col) - 1:0] array_os_ready;
 
   wire [(psum_bw * col) - 1:0] array_in_n;
 
-// Handle in_n based on the mode
+  // Handle in_n based on the mode
   assign array_in_n = (mode == 1'b0) ? {psum_bw * col{1'b0}} :
                 	{{(psum_bw * col - bw * row){1'b0}}, ififo_out};
 
@@ -81,10 +82,11 @@ module corelet (
 	.out_s(array_out_s),          	// Partial sums for WS mode
 	.in_w(L0_out),                	// Activations from L0
 	.inst_w(inst[1:0]),           	// Instructions
-	.in_n(array_in_n),             	// Weights/psums from IFIFO in OS mode
+	.in_n(array_in_n),            	// Weights/psums from IFIFO in OS mode
 	.valid(array_valid),          	// Valid signals for WS
 	.os_ready(array_os_ready),    	// OS-ready signals for each tile
-	.os_output(array_os_output)   	// OS-mode outputs
+	.os_output(array_os_output),  	// OS-mode outputs
+	.accum_limit(accum_limit)     	// Accumulation limit for OS mode
   );
 
   // OFIFO for psums
@@ -131,6 +133,3 @@ module corelet (
   assign os_output = array_os_output; // OS-mode outputs from the array
 
 endmodule
-
-
-
