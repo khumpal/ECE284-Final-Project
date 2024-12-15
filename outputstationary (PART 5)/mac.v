@@ -5,10 +5,13 @@ module mac (out, a, b, c);
 parameter bw = 4;
 parameter psum_bw = 16;
 
+
+    
 output signed [psum_bw-1:0] out;
 input signed  [bw-1:0] a;  // activation
 input signed  [bw-1:0] b;  // weight
 input signed  [psum_bw-1:0] c;
+
 
 
 wire signed [2*bw:0] product;
